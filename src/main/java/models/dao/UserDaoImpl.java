@@ -12,45 +12,14 @@ import java.util.Optional;
 import main.java.managers.DBManager;
 import main.java.models.User;
 import main.java.models.idao.IDao;
+import main.java.utils.SqlTable;
 
 public class UserDaoImpl implements IDao<User>{
 
-    private static final String table = "users";
-    private static final String [] tableFields = {"id", "email", "password"/*, "name"*/};
+    SqlTable SQLTable = new SqlTable("users", new String[] {"id", "email", "password"});
 
-    public static Integer getFieldIndex(String field) {
-        for (int i = 0; i < tableFields.length; i++) {
-            if(tableFields[i].equals(field)) return i;
-        }
-        return null;
-    }
-
-    public static String[] getTableFields() {
-        return tableFields;
-    }
-
-    public static String getTableFieldsString() {
-        return String.join(",", tableFields);
-    }
-
-    public static String getTableSafeFieldsString() {
-        String[] fields = tableFields;
-        for (int i = 0; i < fields.length; i++) {
-            fields[i] = "?";
-        }
-        return String.join(",", fields);
-    }
-
-    public static String getTableSafeUpdateFieldsString() {
-        String[] fields = tableFields;
-        for (int i = 0; i < fields.length; i++) {
-            fields[i] = String.format("%s = ?", fields[i]);
-        }
-        return String.join(",", fields);
-    }
-
-    public static String getTable() {
-        return table;
+    public UserDaoImpl() {
+        
     }
 
     @Override
@@ -71,10 +40,10 @@ public class UserDaoImpl implements IDao<User>{
         int res = 0;
 		try {
             PreparedStatement ps = null;
-            ps = c.prepareStatement(String.format("INSERT INTO %s (%s) values (%s)", getTable(), getTableFieldsString(), getTableSafeFieldsString()));
-            ps.setInt( getFieldIndex("id"), t.getId());
-            ps.setString( getFieldIndex("email"), t.getEmail());
-            ps.setString( getFieldIndex("password"), t.getPassword());
+            ps = c.prepareStatement( SQLTable.buildInsert() );
+            ps.setInt( SQLTable.getFieldIndex("id"), t.getId() );
+            ps.setString( SQLTable.getFieldIndex("email"), t.getEmail() );
+            ps.setString( SQLTable.getFieldIndex("password"), t.getPassword() );
 			res = ps.executeUpdate();
             c.commit();
 		} catch (SQLException e) {
@@ -101,10 +70,10 @@ public class UserDaoImpl implements IDao<User>{
         int res = 0;
 		try {
             PreparedStatement ps = null;
-            ps = c.prepareStatement(String.format("UPDATE %s SET %s WHERE id = %d", getTable(), getTableSafeUpdateFieldsString()));
-            ps.setInt( getFieldIndex("id"), t.getId());
-            ps.setString( getFieldIndex("email"), t.getEmail());
-            ps.setString( getFieldIndex("password"), t.getPassword());
+            ps = c.prepareStatement( String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()) );
+            ps.setInt( SQLTable.getFieldIndex("id"), t.getId());
+            ps.setString( SQLTable.getFieldIndex("email"), t.getEmail());
+            ps.setString( SQLTable.getFieldIndex("password"), t.getPassword());
 			res = ps.executeUpdate();
             c.commit();
             return res == 1 ? true : false;
@@ -130,7 +99,7 @@ public class UserDaoImpl implements IDao<User>{
         Connection c = DBManager.connect();
         int res = 0;
 		try {
-            PreparedStatement ps = c.prepareStatement(String.format("DELETE FROM %s WHERE id = %d", getTable(), t.getId()));
+            PreparedStatement ps = c.prepareStatement(String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getId()));
 			res = ps.executeUpdate();
             c.commit();
 		} catch (SQLException e) {
