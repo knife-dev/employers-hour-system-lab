@@ -2,6 +2,6 @@ package main.java;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello Java");
+        System.out.println("Hello Java, primer edicion por luciano");
     }
 }
