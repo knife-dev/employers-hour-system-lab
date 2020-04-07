@@ -12,9 +12,10 @@ import java.util.Optional;
 import main.java.managers.DBManager;
 import main.java.models.Transportist;
 import main.java.models.idao.IDao;
+import main.java.models.idao.IEmployee;
 import main.java.utils.SqlTable;
 
-public class TransportistDaoImpl implements IDao<Transportist>{
+public class TransportistDaoImpl implements IEmployee<Transportist>{
 
     SqlTable SQLTable = new SqlTable("transportists", new String[] {"userid", "licensePlate"});
 
@@ -113,6 +114,36 @@ public class TransportistDaoImpl implements IDao<Transportist>{
 			}
 		}
         return res == 1 ? true : false;
+    }
+
+    @Override
+    public int taskStart() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public boolean taskEnd(int taskId) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public int getCurrentMonthTaskHours() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public int getCurrentMonthFee() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    @Override
+    public int getFee(String start_date, String end_date) {
+        // TODO Auto-generated method stub
+        return 0;
     }
      
  

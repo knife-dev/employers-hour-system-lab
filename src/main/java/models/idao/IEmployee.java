@@ -1,8 +1,9 @@
-package main.java.models.interfaces;
+package main.java.models.idao;
 
+import main.java.models.idao.IDao;
 
 // What the employee does, not how does it.
-public abstract class IEmployee {
+public interface IEmployee<T> extends IDao<T> {
 
     // These are class-dependant per employee. 
     public abstract int taskStart(); // record the start of a task at current time for this employee.
