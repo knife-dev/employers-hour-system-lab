@@ -17,7 +17,7 @@ import main.java.utils.SqlTable;
 
 public class UserDaoImpl implements IEmployee<User>{
 
-    SqlTable SQLTable = new SqlTable("users", new String[] {"id", "email", "password"});
+    SqlTable SQLTable = new SqlTable("users", new String[] {"id", "email", "password", "user_type"});
 
     public UserDaoImpl() {
         
@@ -45,6 +45,7 @@ public class UserDaoImpl implements IEmployee<User>{
             ps.setInt( SQLTable.getFieldIndex("id"), t.getId() );
             ps.setString( SQLTable.getFieldIndex("email"), t.getEmail() );
             ps.setString( SQLTable.getFieldIndex("password"), t.getPassword() );
+            ps.setString( SQLTable.getFieldIndex("user_type"), t.getUserType() );
 			res = ps.executeUpdate();
             c.commit();
 		} catch (SQLException e) {
