@@ -11,8 +11,9 @@ import java.util.Optional;
 
 import main.java.managers.DBManager;
 import main.java.models.User;
+import main.java.models.idao.IDao;
 
-public class UserDao implements Dao<User>{
+public class UserDaoImpl implements IDao<User>{
 
     private static final String table = "users";
     private static final String [] tableFields = {"id", "email", "password"/*, "name"*/};
