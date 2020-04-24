@@ -6,13 +6,20 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBManager {
+	private static DBManager instance;
 
-	private static final String DB_DRIVER = "org.hsqldb.jdbcDriver";
-	private static final String DB_URL = "jdbc:hsqldb:file:sql/testdb;shutdown=true;hsqldb.default_table_type=cached";
-	private static final String DB_USERNAME = "sa";
-	private static final String DB_PASSWORD = "";
+	private String DB_DRIVER = "org.hsqldb.jdbcDriver";
+	private String DB_URL = "jdbc:hsqldb:file:sql/testdb;shutdown=true;hsqldb.default_table_type=cached";
+	private String DB_USERNAME = "sa";
+	private String DB_PASSWORD = "";
 
-	public static Connection connect() {
+	public static DBManager getInstance() {
+		if(instance == null)
+			instance = new DBManager();
+		return instance;
+	}
+
+	public Connection connect() {
 		Connection c = null;
 		try {
 			Class.forName(DB_DRIVER);
@@ -30,8 +37,8 @@ public class DBManager {
 		return c;
 	}
 
-	public static void shutdown() throws Exception {
-		Connection c = connect();
+	public void shutdown() throws Exception {
+		Connection c = getInstance().connect();
 		Statement s = c.createStatement();
 		s.execute("SHUTDOWN");
 		c.close();

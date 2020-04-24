@@ -61,4 +61,12 @@ public class SqlTable {
         return String.format("UPDATE %s SET %s", this.getTableName(), this.getFieldsSafeUpdateString());
     }
 
+    public String buildSelect(String fields) {
+        return String.format("SELECT %s FROM %s", fields, this.getTableName());
+    }
+
+    public String buildSelect(String fields, String where) {
+        return String.format("SELECT %s FROM %s WHERE %s", fields, this.getTableName(), where);
+    }
+
 }

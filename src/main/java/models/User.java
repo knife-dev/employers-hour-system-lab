@@ -9,6 +9,13 @@ public class User {
     private String password;
     private String userType;
 
+    public User(Integer id, String email, String password, String userType) {
+        this.setId(id);
+        this.setEmail(email);
+        this.setPassword(password);
+        this.setUserType(userType);
+    }
+
     public String getPassword() {
         return password;
     }

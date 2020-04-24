@@ -4,40 +4,75 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
+import main.java.exceptions.MyException;
 import main.java.managers.DBManager;
 import main.java.models.Transportist;
-import main.java.models.idao.IDao;
 import main.java.models.idao.IEmployee;
 import main.java.utils.SqlTable;
 
 public class TransportistDaoImpl implements IEmployee<Transportist>{
 
-    SqlTable SQLTable = new SqlTable("transportists", new String[] {"userid", "licensePlate"});
+    SqlTable SQLTable = new SqlTable("transportists", new String[] {"userId", "licensePlate"});
 
     public TransportistDaoImpl() {
 
     }
 
     @Override
-    public Optional<Transportist> get(long id) {
-        // TODO Auto-generated method stub
+    public Transportist get(long id) throws MyException {
+        Connection c = DBManager.getInstance().connect();
+
+        try {
+            PreparedStatement ps = null;
+            ps = c.prepareStatement( SQLTable.buildSelect("*", String.format("id = %d", id)) );
+            ResultSet rs = ps.executeQuery();
+            if(rs.next())
+            {
+                return new Transportist( rs.getInt("userId"), rs.getString("licensePlate") );
+            }
+        } catch (SQLException ex) {
+            throw new MyException("Error al recuperar el usuario.");
+        }
         return null;
     }
 
     @Override
-    public List<Transportist> getAll() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Transportist> getAll() throws MyException {
+        List<Transportist> transportists = new ArrayList<>();
+        
+		Connection c = DBManager.getInstance().connect();
+		try {
+            PreparedStatement ps = null;
+            ps = c.prepareStatement( SQLTable.buildSelect("*") );
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+                Transportist transportist = new Transportist( rs.getInt("userId"), rs.getString("licensePlate") );
+                transportists.add(transportist);
+            }
+            return transportists;
+		} catch (SQLException e) {
+			try {
+				c.rollback();
+			} catch (SQLException e1) {
+                // rollback falló
+            }
+            throw new MyException("Error al recuperar los usuarios");
+		} finally {
+			try {
+				c.close();
+			} catch (SQLException e1) {
+                throw new MyException("Error al terminar la conexión");
+             }
+        }
     }
 
     @Override
     public boolean insert(Transportist t) {
-		Connection c = DBManager.connect();
+		Connection c = DBManager.getInstance().connect();
         int res = 0;
 		try {
             PreparedStatement ps = null;
@@ -65,11 +100,11 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
     // TODO: fix SQL update.
     @Override
     public boolean update(Transportist t) {
-        Connection c = DBManager.connect();
+        Connection c = DBManager.getInstance().connect();
         int res = 0;
 		try {
             PreparedStatement ps = null;
-            ps = c.prepareStatement( String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getUserId()) );
+            ps = c.prepareStatement( String.format("%s WHERE userId = %d", SQLTable.buildUpdate(), t.getUserId()) );
             ps.setString( SQLTable.getFieldIndex("licensePlate"), t.getLicensePlate());
 			res = ps.executeUpdate();
             c.commit();
@@ -93,10 +128,10 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
 
     @Override
     public boolean delete(Transportist t) {
-        Connection c = DBManager.connect();
+        Connection c = DBManager.getInstance().connect();
         int res = 0;
 		try {
-            PreparedStatement ps = c.prepareStatement(String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getUserId()));
+            PreparedStatement ps = c.prepareStatement(String.format("DELETE FROM %s WHERE userId = %d", SQLTable.getTableName(), t.getUserId()));
 			res = ps.executeUpdate();
             c.commit();
 		} catch (SQLException e) {

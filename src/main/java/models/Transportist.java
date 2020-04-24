@@ -4,18 +4,23 @@ public class Transportist {
 
     // TODO Add Constructor, Getters & Setters
 
-    private int userId;
+    private Integer userId;
     private String licensePlate;
+
+    public Transportist(Integer userId, String licensePlate) {
+        this.setUserId(userId);
+        this.setLicensePlate(licensePlate);
+    }
 
     public String getLicensePlate() {
         return licensePlate;
     }
 
-    public int getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
