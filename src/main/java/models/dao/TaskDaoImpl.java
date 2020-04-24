@@ -9,20 +9,20 @@ import java.util.List;
 
 import main.java.exceptions.MyException;
 import main.java.managers.DBManager;
-import main.java.models.User;
-import main.java.models.idao.IEmployee;
+import main.java.models.Task;
+import main.java.models.idao.ITask;
 import main.java.utils.SqlTable;
 
-public class UserDaoImpl implements IEmployee<User> {
+public class TaskDaoImpl implements ITask<Task> {
 
-    SqlTable SQLTable = new SqlTable("users", new String[] {"id", "email", "password", "userType"});
+    SqlTable SQLTable = new SqlTable("tasks", new String[] {"id", "userId", "hours"});
 
-    public UserDaoImpl() {
+    public TaskDaoImpl() {
         
     }
 
     @Override
-    public User get(Long id) throws MyException {
+    public Task get(Long id) throws MyException {
         Connection connection = DBManager.getInstance().connect();
 
         try {
@@ -31,7 +31,7 @@ public class UserDaoImpl implements IEmployee<User> {
             ResultSet rs = ps.executeQuery();
             if(rs.next())
             {
-                return new User( rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("userType") );
+                return new Task( rs.getLong("id"), rs.getLong("userId"), rs.getFloat("hours"), rs.getString("date") );
             }
         } catch (SQLException ex) {
             throw new MyException("Error al recuperar el usuario.");
@@ -40,8 +40,8 @@ public class UserDaoImpl implements IEmployee<User> {
     }
 
     @Override
-    public List<User> getAll() throws MyException {
-        List<User> users = new ArrayList<>();
+    public List<Task> getAll() throws MyException {
+        List<Task> tasks = new ArrayList<>();
         
 		Connection connection = DBManager.getInstance().connect();
 		try {
@@ -50,8 +50,8 @@ public class UserDaoImpl implements IEmployee<User> {
 			ResultSet rs = ps.executeQuery();
 			
 			while(rs.next()) {
-                User user = new User( rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("userType") );
-                users.add(user);
+                Task task = new Task( rs.getLong("id"), rs.getLong("userId"), rs.getFloat("hours"), rs.getString("date") );
+                tasks.add(task);
             }
 		} catch (SQLException e) {
 			try {
@@ -67,21 +67,21 @@ public class UserDaoImpl implements IEmployee<User> {
                 throw new MyException("Error al terminar la conexión");
              }
         }
-        return users; // return users
+        return tasks; // return tasks
     }
 
     // Should I throw exception in those methods too?
     @Override
-    public boolean insert(User t) {
+    public boolean insert(Task t) {
 		Connection connection = DBManager.getInstance().connect();
         int res = 0;
 		try {
             PreparedStatement ps = null;
             ps = connection.prepareStatement( SQLTable.buildInsert() );
-            // ps.setLong( SQLTable.getFieldIndex("id"), t.getId() );
-            ps.setString( SQLTable.getFieldIndex("email"), t.getEmail() );
-            ps.setString( SQLTable.getFieldIndex("password"), t.getPassword() );
-            ps.setString( SQLTable.getFieldIndex("userType"), t.getUserType() );
+            // ps.setLong(SQLTable.getFieldIndex("id"), t.getId() );
+            ps.setLong( SQLTable.getFieldIndex("userId"), t.getUserId() );
+            ps.setFloat( SQLTable.getFieldIndex("hours"), t.getHours() );
+            ps.setString( SQLTable.getFieldIndex("date"), t.getDate() );
 			res = ps.executeUpdate();
             connection.commit();
 
@@ -105,15 +105,16 @@ public class UserDaoImpl implements IEmployee<User> {
     }
     
     @Override
-    public boolean update(User t) {
+    public boolean update(Task t) {
         Connection connection = DBManager.getInstance().connect();
         int res = 0;
 		try {
             PreparedStatement ps = null;
             ps = connection.prepareStatement( String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()) );
-            ps.setLong( SQLTable.getFieldIndex("id"), t.getId());
-            ps.setString( SQLTable.getFieldIndex("email"), t.getEmail());
-            ps.setString( SQLTable.getFieldIndex("password"), t.getPassword());
+            ps.setLong(SQLTable.getFieldIndex("id"), t.getId());
+            ps.setLong(SQLTable.getFieldIndex("userId"), t.getUserId());
+            ps.setFloat( SQLTable.getFieldIndex("hours"), t.getHours());
+            ps.setString( SQLTable.getFieldIndex("date"), t.getDate());
 			res = ps.executeUpdate();
             connection.commit();
             return res == 1 ? true : false;
@@ -135,7 +136,7 @@ public class UserDaoImpl implements IEmployee<User> {
     }
 
     @Override
-    public boolean delete(User t) {
+    public boolean delete(Task t) {
         Connection connection = DBManager.getInstance().connect();
         int res = 0;
 		try {

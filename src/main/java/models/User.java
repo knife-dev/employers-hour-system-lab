@@ -4,12 +4,12 @@ public class User {
 
     // TODO Add Constructor, Getters & Setters
 
-    private Integer id;
+    private Long id;
     private String email;
     private String password;
     private String userType;
 
-    public User(Integer id, String email, String password, String userType) {
+    public User(Long id, String email, String password, String userType) {
         this.setId(id);
         this.setEmail(email);
         this.setPassword(password);
@@ -24,7 +24,7 @@ public class User {
         return email;
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
@@ -40,7 +40,7 @@ public class User {
         this.password = password;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

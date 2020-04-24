@@ -22,7 +22,7 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
     }
 
     @Override
-    public Transportist get(long id) throws MyException {
+    public Transportist get(Long id) throws MyException {
         Connection c = DBManager.getInstance().connect();
 
         try {
@@ -31,7 +31,7 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
             ResultSet rs = ps.executeQuery();
             if(rs.next())
             {
-                return new Transportist( rs.getInt("userId"), rs.getString("licensePlate") );
+                return new Transportist( rs.getLong("userId"), rs.getString("licensePlate") );
             }
         } catch (SQLException ex) {
             throw new MyException("Error al recuperar el usuario.");
@@ -50,7 +50,7 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
 			ResultSet rs = ps.executeQuery();
 			
 			while(rs.next()) {
-                Transportist transportist = new Transportist( rs.getInt("userId"), rs.getString("licensePlate") );
+                Transportist transportist = new Transportist( rs.getLong("userId"), rs.getString("licensePlate") );
                 transportists.add(transportist);
             }
             return transportists;
@@ -149,36 +149,6 @@ public class TransportistDaoImpl implements IEmployee<Transportist>{
 			}
 		}
         return res == 1 ? true : false;
-    }
-
-    @Override
-    public int taskStart() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public boolean taskEnd(int taskId) {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public int getCurrentMonthTaskHours() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public int getCurrentMonthFee() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public int getFee(String start_date, String end_date) {
-        // TODO Auto-generated method stub
-        return 0;
     }
      
  

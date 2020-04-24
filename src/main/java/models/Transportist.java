@@ -4,10 +4,10 @@ public class Transportist {
 
     // TODO Add Constructor, Getters & Setters
 
-    private Integer userId;
+    private Long userId;
     private String licensePlate;
 
-    public Transportist(Integer userId, String licensePlate) {
+    public Transportist(Long userId, String licensePlate) {
         this.setUserId(userId);
         this.setLicensePlate(licensePlate);
     }
@@ -16,11 +16,11 @@ public class Transportist {
         return licensePlate;
     }
 
-    public Integer getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
