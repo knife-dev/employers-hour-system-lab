@@ -16,6 +16,17 @@ public class User {
         this.setUserType(userType);
     }
 
+    public User(String email, String password, String userType) {
+        this.setEmail(email);
+        this.setPassword(password);
+        this.setUserType(userType);
+    }
+
+    public User(String email, String password) {
+        this.setEmail(email);
+        this.setPassword(password);
+    }
+
     public String getPassword() {
         return password;
     }
@@ -50,7 +61,7 @@ public class User {
 
 
     public String toString() {
-        return String.format("%d,%s,%s", getId(), getEmail(), getPassword());
+        return String.format("%d,%s,%s,%s", getId(), getEmail(), getPassword(), getUserType());
     }
 
 

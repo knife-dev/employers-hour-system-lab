@@ -9,7 +9,7 @@ public class DBManager {
 	private static DBManager instance;
 
 	private String DB_DRIVER = "org.hsqldb.jdbcDriver";
-	private String DB_URL = "jdbc:hsqldb:file:sql/testdb;shutdown=true;hsqldb.default_table_type=cached";
+	private String DB_URL = "jdbc:hsqldb:file:./sql/testdb;shutdown=true;hsqldb.default_table_type=cached";
 	private String DB_USERNAME = "sa";
 	private String DB_PASSWORD = "";
 

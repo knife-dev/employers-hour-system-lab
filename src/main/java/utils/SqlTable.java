@@ -24,12 +24,15 @@ public class SqlTable {
 
     public void setTableFields(String[] tableFields) {
         this.tableFields = tableFields;
+        // System.out.println("setTableFields = " + String.join(",", tableFields));
     }
 
     public Integer getFieldIndex(String field) {
         for (int i = 0; i < tableFields.length; i++) {
-            if(tableFields[i].equals(field)) return i;
+            // System.out.println("getFieldIndex("+tableFields[i]+") = " + i +1);
+            if(tableFields[i].equals(field)) return i + 1;
         }
+        // System.out.println("getFieldIndex = null");
         return null;
     }
 
@@ -38,15 +41,18 @@ public class SqlTable {
     }
 
     public String getFieldsSafeString() {
-        String[] fields = tableFields;
+        String[] fields = this.getTableFields().clone();
+
         for (int i = 0; i < fields.length; i++) {
             fields[i] = "?";
         }
+        // System.out.println("getFieldsSafeString = " + String.join(",", fields));
         return String.join(",", fields);
     }
 
     public String getFieldsSafeUpdateString() {
-        String[] fields = tableFields;
+        String[] fields = this.getTableFields().clone();
+
         for (int i = 0; i < fields.length; i++) {
             fields[i] = String.format("%s = ?", fields[i]);
         }

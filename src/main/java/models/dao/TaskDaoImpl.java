@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.java.exceptions.MyException;
+import main.java.exceptions.DaoException;
 import main.java.managers.DBManager;
 import main.java.models.Task;
 import main.java.models.idao.ITask;
@@ -22,7 +22,7 @@ public class TaskDaoImpl implements ITask<Task> {
     }
 
     @Override
-    public Task get(Long id) throws MyException {
+    public Task get(Long id) throws DaoException {
         Connection connection = DBManager.getInstance().connect();
 
         try {
@@ -34,13 +34,13 @@ public class TaskDaoImpl implements ITask<Task> {
                 return new Task( rs.getLong("id"), rs.getLong("userId"), rs.getFloat("hours"), rs.getString("date") );
             }
         } catch (SQLException ex) {
-            throw new MyException("Error al recuperar el usuario.");
+            throw new DaoException("Error al recuperar el usuario.");
         }
         return null;
     }
 
     @Override
-    public List<Task> getAll() throws MyException {
+    public List<Task> getAll() throws DaoException {
         List<Task> tasks = new ArrayList<>();
         
 		Connection connection = DBManager.getInstance().connect();
@@ -59,12 +59,12 @@ public class TaskDaoImpl implements ITask<Task> {
 			} catch (SQLException e1) {
                 // rollback falló
             }
-            throw new MyException("Error al recuperar los usuarios");
+            throw new DaoException("Error al recuperar los usuarios");
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
-                throw new MyException("Error al terminar la conexión");
+                throw new DaoException("Error al terminar la conexión");
              }
         }
         return tasks; // return tasks
@@ -72,21 +72,30 @@ public class TaskDaoImpl implements ITask<Task> {
 
     // Should I throw exception in those methods too?
     @Override
-    public boolean insert(Task t) {
+    public Task insert(Task t) throws DaoException {
 		Connection connection = DBManager.getInstance().connect();
-        int res = 0;
-		try {
+
+        try {
             PreparedStatement ps = null;
             ps = connection.prepareStatement( SQLTable.buildInsert() );
             // ps.setLong(SQLTable.getFieldIndex("id"), t.getId() );
             ps.setLong( SQLTable.getFieldIndex("userId"), t.getUserId() );
             ps.setFloat( SQLTable.getFieldIndex("hours"), t.getHours() );
             ps.setString( SQLTable.getFieldIndex("date"), t.getDate() );
-			res = ps.executeUpdate();
+			int affectedRows = ps.executeUpdate();
             connection.commit();
 
-            // set userId if possible and return User "t"
-
+            if (affectedRows == 0) {
+                throw new DaoException("Error al crear la tarea.");
+            }
+            PreparedStatement s = connection.prepareStatement("CALL IDENTITY()");
+            ResultSet rs = s.executeQuery();
+            if(rs.next()) {
+                t.setId( rs.getLong( SQLTable.getFieldIndex("id") ) );
+            }
+            else {
+                throw new DaoException("Error al crear la tarea, no se pudo obtener el ID.");
+            }
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
@@ -101,13 +110,13 @@ public class TaskDaoImpl implements ITask<Task> {
 				// e1.printStackTrace();
 			}
 		}
-        return res == 1 ? true : false;
+        return t;
     }
     
     @Override
-    public boolean update(Task t) {
+    public int update(Task t) throws DaoException {
         Connection connection = DBManager.getInstance().connect();
-        int res = 0;
+        int affectedRows = 0;
 		try {
             PreparedStatement ps = null;
             ps = connection.prepareStatement( String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()) );
@@ -115,10 +124,12 @@ public class TaskDaoImpl implements ITask<Task> {
             ps.setLong(SQLTable.getFieldIndex("userId"), t.getUserId());
             ps.setFloat( SQLTable.getFieldIndex("hours"), t.getHours());
             ps.setString( SQLTable.getFieldIndex("date"), t.getDate());
-			res = ps.executeUpdate();
+			affectedRows = ps.executeUpdate();
             connection.commit();
-            return res == 1 ? true : false;
-		} catch (SQLException e) {
+            if (affectedRows == 0) {
+                throw new DaoException("Error al actualizar el usuario.");
+            }
+        } catch (SQLException e) {
 			try {
 				connection.rollback();
 				e.printStackTrace();
@@ -132,16 +143,16 @@ public class TaskDaoImpl implements ITask<Task> {
 				//no hago nada
 			}
 		}
-        return res == 1 ? true : false;
+        return affectedRows;
     }
 
     @Override
-    public boolean delete(Task t) {
+    public int delete(Task t) {
         Connection connection = DBManager.getInstance().connect();
-        int res = 0;
+        int affectedRows = 0;
 		try {
             PreparedStatement ps = connection.prepareStatement(String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getId()));
-			res = ps.executeUpdate();
+			affectedRows = ps.executeUpdate();
             connection.commit();
 		} catch (SQLException e) {
 			try {
@@ -157,7 +168,13 @@ public class TaskDaoImpl implements ITask<Task> {
 				//no hago nada
 			}
 		}
-        return res == 1 ? true : false;
+        return affectedRows;
+    }
+
+    @Override
+    public Float getTaskHoursByUserId() {
+        // TODO Auto-generated method stub
+        return null;
     }
      
  

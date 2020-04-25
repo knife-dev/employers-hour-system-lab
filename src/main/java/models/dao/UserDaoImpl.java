@@ -7,22 +7,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import main.java.exceptions.MyException;
+import main.java.exceptions.InvalidUserException;
+import main.java.exceptions.DaoException;
 import main.java.managers.DBManager;
 import main.java.models.User;
-import main.java.models.idao.IEmployee;
+import main.java.models.idao.IUser;
 import main.java.utils.SqlTable;
 
-public class UserDaoImpl implements IEmployee<User> {
+public class UserDaoImpl implements IUser<User> {
 
     SqlTable SQLTable = new SqlTable("users", new String[] {"id", "email", "password", "userType"});
-
+    
     public UserDaoImpl() {
         
     }
 
     @Override
-    public User get(Long id) throws MyException {
+    public User get(Long id) throws DaoException {
         Connection connection = DBManager.getInstance().connect();
 
         try {
@@ -34,13 +35,13 @@ public class UserDaoImpl implements IEmployee<User> {
                 return new User( rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("userType") );
             }
         } catch (SQLException ex) {
-            throw new MyException("Error al recuperar el usuario.");
+            throw new DaoException("Error al recuperar el usuario.");
         }
         return null;
     }
 
     @Override
-    public List<User> getAll() throws MyException {
+    public List<User> getAll() throws DaoException {
         List<User> users = new ArrayList<>();
         
 		Connection connection = DBManager.getInstance().connect();
@@ -59,12 +60,12 @@ public class UserDaoImpl implements IEmployee<User> {
 			} catch (SQLException e1) {
                 // rollback falló
             }
-            throw new MyException("Error al recuperar los usuarios");
+            throw new DaoException("Error al recuperar los usuarios");
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
-                throw new MyException("Error al terminar la conexión");
+                throw new DaoException("Error al terminar la conexión");
              }
         }
         return users; // return users
@@ -72,52 +73,67 @@ public class UserDaoImpl implements IEmployee<User> {
 
     // Should I throw exception in those methods too?
     @Override
-    public boolean insert(User t) {
+    public User insert(User t) throws DaoException {
 		Connection connection = DBManager.getInstance().connect();
-        int res = 0;
 		try {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement( SQLTable.buildInsert() );
-            // ps.setLong( SQLTable.getFieldIndex("id"), t.getId() );
+            PreparedStatement ps = connection.prepareStatement( SQLTable.buildInsert() );
             ps.setString( SQLTable.getFieldIndex("email"), t.getEmail() );
             ps.setString( SQLTable.getFieldIndex("password"), t.getPassword() );
             ps.setString( SQLTable.getFieldIndex("userType"), t.getUserType() );
-			res = ps.executeUpdate();
+			int affectedRows = ps.executeUpdate();
             connection.commit();
 
-            // set userId if possible and return User "t"
+            if (affectedRows == 0) {
+                throw new DaoException("Error al crear el usuario.");
+            }
 
+            PreparedStatement s = connection.prepareStatement("CALL IDENTITY()");
+            ResultSet rs = s.executeQuery();
+            if(rs.next()) {
+                t.setId( rs.getLong( SQLTable.getFieldIndex("id") ) );
+            }
+            else {
+                throw new DaoException("Error al crear el usuario, no se pudo obtener el ID.");
+            }
 		} catch (SQLException e) {
+            e.printStackTrace();
 			try {
 				connection.rollback();
-				// e.printStackTrace();
 			} catch (SQLException e1) {
-				// e1.printStackTrace();
+				e1.printStackTrace();
 			}
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
-				// e1.printStackTrace();
+				e1.printStackTrace();
 			}
 		}
-        return res == 1 ? true : false;
+        return t;
     }
     
     @Override
-    public boolean update(User t) {
+    public int update(User t) throws DaoException {
+
+        if(t.getId() == null) {
+            throw new InvalidUserException("El ID de usuario es invalido.");
+        }
+
         Connection connection = DBManager.getInstance().connect();
-        int res = 0;
-		try {
+        int affectedRows = 0;
+        try {
+
             PreparedStatement ps = null;
             ps = connection.prepareStatement( String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()) );
             ps.setLong( SQLTable.getFieldIndex("id"), t.getId());
             ps.setString( SQLTable.getFieldIndex("email"), t.getEmail());
             ps.setString( SQLTable.getFieldIndex("password"), t.getPassword());
-			res = ps.executeUpdate();
+			affectedRows = ps.executeUpdate();
             connection.commit();
-            return res == 1 ? true : false;
-		} catch (SQLException e) {
+            if (affectedRows == 0) {
+                throw new DaoException("Error al actualizar el usuario.");
+            }
+        } catch (SQLException e) {
 			try {
 				connection.rollback();
 				e.printStackTrace();
@@ -131,16 +147,21 @@ public class UserDaoImpl implements IEmployee<User> {
 				//no hago nada
 			}
 		}
-        return res == 1 ? true : false;
+        return affectedRows;
     }
 
     @Override
-    public boolean delete(User t) {
+    public int delete(User t) throws DaoException {
+
+        if(t.getId() == null) {
+            throw new InvalidUserException("El ID de usuario es invalido.");
+        }
+
         Connection connection = DBManager.getInstance().connect();
-        int res = 0;
+        int affectedRows = 0;
 		try {
             PreparedStatement ps = connection.prepareStatement(String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getId()));
-			res = ps.executeUpdate();
+			affectedRows = ps.executeUpdate();
             connection.commit();
 		} catch (SQLException e) {
 			try {
@@ -156,7 +177,7 @@ public class UserDaoImpl implements IEmployee<User> {
 				//no hago nada
 			}
 		}
-        return res == 1 ? true : false;
+        return affectedRows;
     }
      
  
