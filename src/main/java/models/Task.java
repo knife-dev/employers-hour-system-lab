@@ -13,6 +13,17 @@ public class Task {
         this.setDate(date);
     }
 
+    public Task(Long userId, Float hours, String date) {
+        this.setId(id);
+        this.setUserId(userId);
+        this.setHours(hours);
+        this.setDate(date);
+    }
+
+    public Task(Long userId) {
+        this.setUserId(userId);
+    }
+
     public Long getId() {
         return id;
     }
@@ -45,5 +56,8 @@ public class Task {
         this.hours = hours;
     }
 
+    public String toString() {
+        return String.format("%d,%d,%.2f,%s", getId(), getUserId(), getHours(), getDate());
+    }
 
 }

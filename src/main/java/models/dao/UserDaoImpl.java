@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.java.exceptions.InvalidUserException;
+import main.java.exceptions.UserNotFoundException;
 import main.java.exceptions.DaoException;
 import main.java.managers.DBManager;
 import main.java.models.User;
@@ -34,10 +35,11 @@ public class UserDaoImpl implements IUser<User> {
             {
                 return new User( rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("userType") );
             }
-        } catch (SQLException ex) {
+        } catch (SQLException e) {
+            e.printStackTrace();
             throw new DaoException("Error al recuperar el usuario.");
         }
-        return null;
+        throw new UserNotFoundException("No se encontró al usuario.");
     }
 
     @Override
@@ -56,15 +58,17 @@ public class UserDaoImpl implements IUser<User> {
             }
 		} catch (SQLException e) {
 			try {
-				connection.rollback();
+                connection.rollback();
+                e.printStackTrace();
 			} catch (SQLException e1) {
-                // rollback falló
+                e1.printStackTrace();
             }
             throw new DaoException("Error al recuperar los usuarios");
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
+                e1.printStackTrace();
                 throw new DaoException("Error al terminar la conexión");
              }
         }
@@ -96,9 +100,9 @@ public class UserDaoImpl implements IUser<User> {
                 throw new DaoException("Error al crear el usuario, no se pudo obtener el ID.");
             }
 		} catch (SQLException e) {
-            e.printStackTrace();
 			try {
-				connection.rollback();
+                connection.rollback();
+                e.printStackTrace();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
@@ -138,13 +142,13 @@ public class UserDaoImpl implements IUser<User> {
 				connection.rollback();
 				e.printStackTrace();
 			} catch (SQLException e1) {
-				//no hago nada
+				e1.printStackTrace();
 			}
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
-				//no hago nada
+				e1.printStackTrace();
 			}
 		}
         return affectedRows;
@@ -168,13 +172,13 @@ public class UserDaoImpl implements IUser<User> {
 				connection.rollback();
 				e.printStackTrace();
 			} catch (SQLException e1) {
-				//no hago nada
+				e1.printStackTrace();
 			}
 		} finally {
 			try {
 				connection.close();
 			} catch (SQLException e1) {
-				//no hago nada
+				e1.printStackTrace();
 			}
 		}
         return affectedRows;

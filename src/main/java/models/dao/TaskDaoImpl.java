@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import main.java.exceptions.DaoException;
+import main.java.exceptions.NoTaskFoundException;
 import main.java.managers.DBManager;
 import main.java.models.Task;
 import main.java.models.idao.ITask;
@@ -15,7 +16,7 @@ import main.java.utils.SqlTable;
 
 public class TaskDaoImpl implements ITask<Task> {
 
-    SqlTable SQLTable = new SqlTable("tasks", new String[] {"id", "userId", "hours"});
+    SqlTable SQLTable = new SqlTable("tasks", new String[] {"id", "userId", "hours", "date"});
 
     public TaskDaoImpl() {
         
@@ -146,6 +147,20 @@ public class TaskDaoImpl implements ITask<Task> {
         return affectedRows;
     }
 
+    public Task save(Task t) throws DaoException {
+        System.out.println("save()... ");
+
+        try {
+            this.getTaskByUserId(t.getId());
+            System.out.println("Update... ");
+            this.update(t);
+        } catch (NoTaskFoundException e) {
+            System.out.println("Insert... ");
+            t = this.insert(t);
+        }
+        return t;
+    }
+
     @Override
     public int delete(Task t) {
         Connection connection = DBManager.getInstance().connect();
@@ -172,9 +187,87 @@ public class TaskDaoImpl implements ITask<Task> {
     }
 
     @Override
-    public Float getTaskHoursByUserId() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Task> getTaskByUserId(Long userId) throws DaoException {
+        List<Task> tasks = new ArrayList<>();
+        
+		Connection connection = DBManager.getInstance().connect();
+		try {
+            PreparedStatement ps = null;
+            ps = connection.prepareStatement( SQLTable.buildSelect("*", String.format("userId = %d",userId) ) );
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+                Task task = new Task( rs.getLong("id"), rs.getLong("userId"), rs.getFloat("hours"), rs.getString("date") );
+                tasks.add(task);
+            }
+            if(tasks.size() <= 0 ) {
+                throw new NoTaskFoundException("No se encontró ninguna tarea para el usuario.");
+            }
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+                // rollback falló
+            }
+            throw new DaoException("Error al recuperar las tareas");
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e1) {
+                throw new DaoException("Error al terminar la conexión");
+             }
+        }
+        return tasks;
+    }
+
+    @Override
+    public int deleteByUserId(Long userId) throws DaoException {
+        Connection connection = DBManager.getInstance().connect();
+        int affectedRows = 0;
+		try {
+            PreparedStatement ps = connection.prepareStatement(String.format("DELETE FROM %s WHERE userId = %d", SQLTable.getTableName(), userId));
+			affectedRows = ps.executeUpdate();
+            connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+				e.printStackTrace();
+			} catch (SQLException e1) {
+				//no hago nada
+			}
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e1) {
+				//no hago nada
+			}
+		}
+        return affectedRows;
+    }
+
+    @Override
+    public int deleteAll() throws DaoException {
+        Connection connection = DBManager.getInstance().connect();
+        int affectedRows = 0;
+		try {
+            PreparedStatement ps = connection.prepareStatement(String.format("DELETE FROM %s", SQLTable.getTableName()));
+			affectedRows = ps.executeUpdate();
+            connection.commit();
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+				e.printStackTrace();
+			} catch (SQLException e1) {
+				//no hago nada
+			}
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e1) {
+				//no hago nada
+			}
+		}
+        return affectedRows;
     }
      
  
