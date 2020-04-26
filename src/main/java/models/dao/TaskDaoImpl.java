@@ -68,7 +68,7 @@ public class TaskDaoImpl implements ITask<Task> {
                 throw new DaoException("Error al terminar la conexión");
              }
         }
-        return tasks; // return tasks
+        return tasks;
     }
 
     // Should I throw exception in those methods too?
@@ -268,6 +268,40 @@ public class TaskDaoImpl implements ITask<Task> {
 			}
 		}
         return affectedRows;
+    }
+
+    @Override
+    public List<Task> getTasksByDate(String date) throws DaoException {
+        List<Task> tasks = new ArrayList<>();
+        
+		Connection connection = DBManager.getInstance().connect();
+		try {
+            PreparedStatement ps = null;
+            ps = connection.prepareStatement( SQLTable.buildSelect("*", "date = ?") );
+            ps.setString(1, date);
+			ResultSet rs = ps.executeQuery();
+			
+			while(rs.next()) {
+                Task task = new Task( rs.getLong("id"), rs.getLong("userId"), rs.getFloat("hours"), rs.getString("date") );
+                tasks.add(task);
+            }
+		} catch (SQLException e) {
+            e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            throw new DaoException("Error al recuperar las tareas");
+		} finally {
+			try {
+				connection.close();
+			} catch (SQLException e1) {
+                e1.printStackTrace();
+                throw new DaoException("Error al terminar la conexión");
+             }
+        }
+        return tasks;
     }
      
  

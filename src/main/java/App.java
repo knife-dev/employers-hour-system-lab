@@ -1,5 +1,7 @@
 package main.java;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -96,7 +98,8 @@ public class App {
                     try {
                         Task task = new Task(userId);
                         task.setHours(Dentre.flotante("Ingrese horas a cargar: "));
-                        task.setDate(new Date().toString());
+                        Format formatter = new SimpleDateFormat("yyyy-MM-dd");
+                        task.setDate(formatter.format(new Date()));
                         taskDao.insert(task);
                     } catch (DaoException e) {
                         e.printStackTrace();
@@ -124,8 +127,11 @@ public class App {
                     break;
                 }
                 case 8: {
+                    Format formatter = new SimpleDateFormat("yyyy-MM-dd");
+                    String hoy = formatter.format(new Date());
+
                     TaskDaoImpl taskDao = new TaskDaoImpl();
-                    List<Task> tasks = taskDao.getAll();
+                    List<Task> tasks = taskDao.getTasksByDate(  hoy  );
                     if(tasks.size() <= 0 ) {
                         System.out.println("Todavia no se cargó ninguna tarea.");
                         break;
@@ -153,7 +159,7 @@ public class App {
 
                         Float horas = honorarios.get(userId);
                         Float honorario = (horas * reward / 1);
-                        System.out.println(String.format("UserID: %d - Horas: %.2f, Honorarios: %.2f\n", userId, horas, honorario));
+                        System.out.println(String.format("UserID: %d - %s - Horas: %.2f, Honorarios: %.2f\n", userId, hoy, horas, honorario));
                     }
                 }
             }
