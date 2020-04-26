@@ -3,17 +3,23 @@ package main.java;
 import java.util.List;
 
 import main.java.models.User;
+import main.java.models.Task;
 import main.java.models.dao.UserDaoImpl;
+import main.java.models.dao.TaskDaoImpl;
 import main.java.utils.Dentre;
 import main.java.utils.Prompts;
 
 public class App {
-    public static void main(String[] args) throws Exception {
 
-        TableManager.createUserTable();
+	
+	public static void main(String[] args) throws Exception {
 
-        int opt = Prompts.menuOption("Alta usuario", "Ver usuarios", "Cancelar");
-        while(opt != 3) {
+		String [] opciones = {"Alta usuario", "Ver usuarios", "Cargar horas", "Cancelar"};
+		
+		TableManager.createUserTable();
+
+        int opt = Prompts.menuOption(opciones);
+        while(opt != opciones.length) {
             switch (opt) {
                 case 1: {
                     UserDaoImpl userDao = new UserDaoImpl();
@@ -34,6 +40,18 @@ public class App {
                     break;
                 }
                 case 3: {
+                	TaskDaoImpl taskDao = new TaskDaoImpl();
+                    List<Task> tasks = taskDao.getAll();
+                    long id = Dentre.largo("Ingrese id del usuario: ");
+                    for (Task task : tasks) {
+                        if (task.getId() == id ) {
+                        	System.out.println("Usuario encontrado!");
+                        	task.setHours(Dentre.flotante("Ingrese horas a cargar: "));
+                        	taskDao.update(task);
+                        }else {
+                        	System.out.println("Usuario no encontrado!");
+                        }
+                    }                	
     
                     break;
                 }
@@ -42,7 +60,7 @@ public class App {
                     break;
                 }
             }
-            opt = Prompts.menuOption("Alta usuario", "Ver usuarios", "Cancelar");
+            opt = Prompts.menuOption(opciones);
         }
     }
 }
