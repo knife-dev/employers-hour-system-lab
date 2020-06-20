@@ -1,4 +1,4 @@
-package daoimpl;
+package dao.daoimpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import exceptions.EmployerException;
 import exceptions.NoTaskFoundException;
 import db.DBManager;
 import entities.Task;
-import idao.ITask;
+import dao.ITask;
 import utils.SqlTable;
 
 public class TaskDaoImpl implements ITask<Task> {

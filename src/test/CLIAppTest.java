@@ -11,9 +11,9 @@ import exceptions.EmployerException;
 import exceptions.NoTaskFoundException;
 import exceptions.UserNotFoundException;
 import entities.Task;
-import daoimpl.UserDaoImpl;
+import dao.daoimpl.UserDaoImpl;
 import db.TableManager;
-import daoimpl.TaskDaoImpl;
+import dao.daoimpl.TaskDaoImpl;
 import utils.Dentre;
 import utils.Prompts;
 

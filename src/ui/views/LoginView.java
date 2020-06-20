@@ -3,17 +3,10 @@ package ui.views;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import net.miginfocom.swing.MigLayout;
-
-import java.awt.BorderLayout;
 
 import ui.helpers.KMessageDialog;
 import ui.helpers.UIHelper;
@@ -27,7 +20,6 @@ public class LoginView extends BaseFrameView {
     private JPanel contentPanel;
 
     // Labels
-    //private JLabel statusLabel;
     private JLabel emailLabel;
     private JLabel passwordLabel;
 
@@ -52,7 +44,6 @@ public class LoginView extends BaseFrameView {
         contentPanel = UIHelper.createCenteredPanel(); //
 
         // Create Labels
-        // statusLabel   = UIHelper.createLabel("Welcome to Employer! Please fill up your credentials.");
         emailLabel    = UIHelper.createLabel("Email: ");
         passwordLabel = UIHelper.createLabel("Password: ");
 

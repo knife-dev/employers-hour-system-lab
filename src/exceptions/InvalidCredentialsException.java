@@ -1,12 +1,12 @@
 package exceptions;
 
-public class InvalidUserException extends EmployerException {
+public class InvalidCredentialsException extends EmployerException {
     /**
      * Custom Exception
      */
     private static final long serialVersionUID = 1L;
 
-    public InvalidUserException(String message) {
+    public InvalidCredentialsException(String message) {
         super(message);
     }
 }

@@ -1,4 +1,4 @@
-package daoimpl;
+package dao.daoimpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import exceptions.EmployerException;
 import exceptions.InvalidUserException;
 import db.DBManager;
 import entities.Transportist;
-import idao.ITransportist;
+import dao.ITransportist;
 import utils.SqlTable;
 
 public class TransportistDaoImpl implements ITransportist<Transportist>{
