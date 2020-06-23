@@ -18,7 +18,7 @@ import utils.SqlTable;
 
 public class UserDaoImpl implements IUser<User> {
 
-    SqlTable SQLTable = new SqlTable("users", new String[] { "id", "email", "password" });
+    SqlTable SQLTable = new SqlTable("users", new String[] { "id", "email", "password", "role" });
 
     public UserDaoImpl() {
 
@@ -33,7 +33,7 @@ public class UserDaoImpl implements IUser<User> {
             ps = connection.prepareStatement(SQLTable.buildSelect("*", String.format("id = %d", id)));
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"));
+                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -53,7 +53,7 @@ public class UserDaoImpl implements IUser<User> {
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                User user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"));
+                User user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
                 users.add(user);
             }
         } catch (SQLException e) {
@@ -83,11 +83,12 @@ public class UserDaoImpl implements IUser<User> {
             PreparedStatement ps = connection.prepareStatement(SQLTable.buildInsert());
             ps.setString(SQLTable.getFieldIndex("email"), t.getEmail());
             ps.setString(SQLTable.getFieldIndex("password"), t.getPassword());
+            ps.setString(SQLTable.getFieldIndex("role"), t.getRole());
             int affectedRows = ps.executeUpdate();
             connection.commit();
 
             if (affectedRows == 0) {
-                throw new EmployerException("Error al crear el usuario.");
+                throw new EmployerException("Error al crear el usuario, no se logro insertar.");
             }
 
             PreparedStatement s = connection.prepareStatement("CALL IDENTITY()");
@@ -104,11 +105,13 @@ public class UserDaoImpl implements IUser<User> {
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
+            throw new EmployerException("Error al crear el usuario.");
         } finally {
             try {
                 connection.close();
             } catch (SQLException e1) {
                 e1.printStackTrace();
+                throw new EmployerException("Error al terminar la conexión");
             }
         }
         return t;
@@ -130,6 +133,7 @@ public class UserDaoImpl implements IUser<User> {
             ps.setLong(SQLTable.getFieldIndex("id"), t.getId());
             ps.setString(SQLTable.getFieldIndex("email"), t.getEmail());
             ps.setString(SQLTable.getFieldIndex("password"), t.getPassword());
+            ps.setString(SQLTable.getFieldIndex("role"), t.getRole());
             affectedRows = ps.executeUpdate();
             connection.commit();
             if (affectedRows == 0) {
@@ -147,6 +151,7 @@ public class UserDaoImpl implements IUser<User> {
                 connection.close();
             } catch (SQLException e1) {
                 e1.printStackTrace();
+                throw new EmployerException("Error al terminar la conexión");
             }
         }
         return affectedRows;
@@ -178,6 +183,7 @@ public class UserDaoImpl implements IUser<User> {
                 connection.close();
             } catch (SQLException e1) {
                 e1.printStackTrace();
+                throw new EmployerException("Error al terminar la conexión");
             }
         }
         return affectedRows;

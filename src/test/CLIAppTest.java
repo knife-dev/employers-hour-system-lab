@@ -46,7 +46,8 @@ public class CLIAppTest {
                     UserDaoImpl userDao = new UserDaoImpl();
                     User inserted = userDao.insert(new User( 
                         Dentre.texto("Ingresa email: "), 
-                        Dentre.texto("Ingresa contraseña: ")
+                        Dentre.texto("Ingresa contraseña: "),
+                        "admin"
                     ));
                     System.out.println("Usuario Insertado, ID: " + inserted.getId());
                     break;

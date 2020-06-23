@@ -7,6 +7,7 @@ import java.sql.SQLException;
 public class TableManager {
 	/**
 	 * Clase Temporal para crear la DB
+	 * NO debe ser incluída en una build de producción
 	 */
 
 	public static void createUserTable() {
@@ -18,7 +19,8 @@ public class TableManager {
 			String sqlCreate = "CREATE TABLE users"
 			+ "  (id 	   BIGINT IDENTITY PRIMARY KEY,"
 			+ "   email    VARCHAR(256) NOT NULL,"
-			+ "   password VARCHAR(10) NOT NULL )";
+			+ "   password VARCHAR(10) NOT NULL,"
+			+ "   role VARCHAR(256) NOT NULL )";
 
 			PreparedStatement ps = null;
 			ps = connection.prepareStatement( sqlCreate );
@@ -55,7 +57,7 @@ public class TableManager {
 			+ "   userId	BIGINT NOT NULL,"
 			+ "   hours		FLOAT NOT NULL,"
 			+ "   date		VARCHAR(256),"
-			+ "	  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE)";
+			+ "	  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE NO ACTION ON UPDATE CASCADE)";
 
 			PreparedStatement ps = null;
 			ps = connection.prepareStatement( sqlCreate );

@@ -9,6 +9,7 @@ public class BaseFrameView extends JFrame {
         this.onCreate();
         this.onCreateView();
         this.onViewCreated();
+        reloadView();
     }
 
     public void onCreate() {
@@ -25,7 +26,7 @@ public class BaseFrameView extends JFrame {
     }
 
     public void onViewCreated() {
-        reloadView();
+        // reloadView();
         setVisible(true);
     }
 
