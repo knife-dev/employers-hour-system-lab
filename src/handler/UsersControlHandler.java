@@ -7,6 +7,7 @@ import java.util.List;
 import entities.User;
 import exceptions.EmployerException;
 import services.UserBO;
+import ui.helpers.KMessageDialog;
 import ui.listeners.OnClickListener;
 import ui.views.UsersControlView;
 
@@ -46,6 +47,7 @@ public class UsersControlHandler extends BaseHandler implements OnClickListener 
         } catch (EmployerException e) {
             // TODO add error message dialog
             e.printStackTrace();
+            new KMessageDialog("Error", e.getMessage());
         }
         return users;
     }
@@ -61,6 +63,7 @@ public class UsersControlHandler extends BaseHandler implements OnClickListener 
         } catch (EmployerException e) {
             // TODO add error message dialog
             e.printStackTrace();
+            new KMessageDialog("Error", e.getMessage());
         }
         return user;
     }
@@ -78,6 +81,7 @@ public class UsersControlHandler extends BaseHandler implements OnClickListener 
         } catch (EmployerException e) {
             // TODO add error message dialog
             e.printStackTrace();
+            new KMessageDialog("Error", e.getMessage());
         }
         return affectedRows > 0;
     }
@@ -94,6 +98,7 @@ public class UsersControlHandler extends BaseHandler implements OnClickListener 
         } catch (EmployerException e) {
             // TODO add error message dialog
             e.printStackTrace();
+            new KMessageDialog("Error", e.getMessage());
         }
         return affectedRows > 0;
     }

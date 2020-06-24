@@ -7,112 +7,87 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import dao.IUser;
+import entities.User;
+import exceptions.EmployerException;
 import exceptions.InvalidUserException;
 import exceptions.UserNotFoundException;
-import exceptions.EmployerException;
-import exceptions.InvalidCredentialsException;
-import db.DBManager;
-import entities.User;
-import dao.IUser;
 import utils.SqlTable;
 
-public class UserDaoImpl implements IUser<User> {
+public class UserDaoImpl extends BaseDaoImpl implements IUser<User> {
 
     SqlTable SQLTable = new SqlTable("users", new String[] { "id", "email", "password", "role" });
 
-    public UserDaoImpl() {
-
-    }
-
     @Override
     public User get(Long id) throws EmployerException {
-        Connection connection = DBManager.getInstance().connect();
-
+        User user = null;
+        Connection connection = createConnection();
         try {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement(SQLTable.buildSelect("*", String.format("id = %d", id)));
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
-            }
+            PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*", "id = ?"));
+            ps.setLong(1, id);
+            ResultSet rs = executeQueryFirstRow(ps);
+            if (rs == null || !rs.next())
+                throw new UserNotFoundException("No se encontró el usuario.");
+            user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),
+            rs.getString("role"));
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new EmployerException("Error al recuperar el usuario.");
+            throw new UserNotFoundException("Error al recuperar los datos de usuario.");
+        } finally {
+            closeConnection(connection);
         }
-        throw new UserNotFoundException("No se encontró al usuario.");
+        return user;
     }
 
     @Override
     public List<User> getAll() throws EmployerException {
         List<User> users = new ArrayList<>();
-
-        Connection connection = DBManager.getInstance().connect();
+        Connection connection = createConnection();
         try {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement(SQLTable.buildSelect("*"));
-            ResultSet rs = ps.executeQuery();
-
+            PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*"));
+            ResultSet rs = executeQuery(ps);
+            if (rs == null)
+                throw new EmployerException("Error al consultar los usuarios");
             while (rs.next()) {
-                User user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
+                User user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),
+                        rs.getString("role"));
                 users.add(user);
             }
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-                e.printStackTrace();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
-            throw new EmployerException("Error al recuperar los usuarios");
+            throw new EmployerException("Error al recuperar datos de los usuarios");
         } finally {
-            try {
-                connection.close();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-                throw new EmployerException("Error al terminar la conexión");
-            }
+            closeConnection(connection);
         }
         return users; // return users
     }
 
-    // Should I throw exception in those methods too?
     @Override
     public User insert(User t) throws EmployerException {
-        Connection connection = DBManager.getInstance().connect();
+        Connection connection = createConnection();
+
         try {
-            PreparedStatement ps = connection.prepareStatement(SQLTable.buildInsert());
+
+            PreparedStatement ps = preparedStatement(connection, SQLTable.buildInsert());
             ps.setString(SQLTable.getFieldIndex("email"), t.getEmail());
             ps.setString(SQLTable.getFieldIndex("password"), t.getPassword());
             ps.setString(SQLTable.getFieldIndex("role"), t.getRole());
             int affectedRows = ps.executeUpdate();
-            connection.commit();
+            ps.getConnection().commit();
 
-            if (affectedRows == 0) {
+            if (affectedRows == 0)
                 throw new EmployerException("Error al crear el usuario, no se logro insertar.");
-            }
 
-            PreparedStatement s = connection.prepareStatement("CALL IDENTITY()");
-            ResultSet rs = s.executeQuery();
-            if (rs.next()) {
-                t.setId(rs.getLong(SQLTable.getFieldIndex("id")));
-            } else {
+            PreparedStatement s = preparedStatement(connection, "CALL IDENTITY()");
+            ResultSet rs = executeQueryFirstRow(s);
+            if (rs == null || !rs.next()) {
                 throw new EmployerException("Error al crear el usuario, no se pudo obtener el ID.");
             }
+            t.setId(rs.getLong(SQLTable.getFieldIndex("id")));
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-                e.printStackTrace();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
+            e.printStackTrace();
             throw new EmployerException("Error al crear el usuario.");
         } finally {
-            try {
-                connection.close();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-                throw new EmployerException("Error al terminar la conexión");
-            }
+            closeConnection(connection);
         }
         return t;
     }
@@ -120,39 +95,27 @@ public class UserDaoImpl implements IUser<User> {
     @Override
     public int update(User t) throws EmployerException {
 
-        if (t.getId() == null) {
+        if (t.getId() == null)
             throw new InvalidUserException("El ID de usuario es invalido.");
-        }
 
-        Connection connection = DBManager.getInstance().connect();
         int affectedRows = 0;
+        Connection connection = createConnection();
+
         try {
 
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement(String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()));
+            PreparedStatement ps = preparedStatement(connection, String.format("%s WHERE id = %d", SQLTable.buildUpdate(), t.getId()));
             ps.setLong(SQLTable.getFieldIndex("id"), t.getId());
             ps.setString(SQLTable.getFieldIndex("email"), t.getEmail());
             ps.setString(SQLTable.getFieldIndex("password"), t.getPassword());
             ps.setString(SQLTable.getFieldIndex("role"), t.getRole());
             affectedRows = ps.executeUpdate();
-            connection.commit();
-            if (affectedRows == 0) {
-                throw new EmployerException("Error al actualizar el usuario.");
-            }
+            ps.getConnection().commit();
+            if (affectedRows == 0)
+                throw new EmployerException("Error: el usuario no se actualizó.");
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-                e.printStackTrace();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
+            throw new EmployerException("Error al actualizar el usuario.");
         } finally {
-            try {
-                connection.close();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-                throw new EmployerException("Error al terminar la conexión");
-            }
+            closeConnection(connection);
         }
         return affectedRows;
     }
@@ -160,53 +123,44 @@ public class UserDaoImpl implements IUser<User> {
     @Override
     public int delete(User t) throws EmployerException {
 
-        if (t.getId() == null) {
+        if (t.getId() == null)
             throw new InvalidUserException("El ID de usuario es invalido.");
-        }
 
-        Connection connection = DBManager.getInstance().connect();
         int affectedRows = 0;
+        Connection connection = createConnection();
+
         try {
-            PreparedStatement ps = connection.prepareStatement(
-                    String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getId()));
+            PreparedStatement ps = preparedStatement(connection ,String.format("DELETE FROM %s WHERE id = %d", SQLTable.getTableName(), t.getId()));
             affectedRows = ps.executeUpdate();
-            connection.commit();
+            ps.getConnection().commit();
         } catch (SQLException e) {
-            try {
-                connection.rollback();
-                e.printStackTrace();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-            }
+            throw new EmployerException("Error al eliminar el usuario.");
         } finally {
-            try {
-                connection.close();
-            } catch (SQLException e1) {
-                e1.printStackTrace();
-                throw new EmployerException("Error al terminar la conexión");
-            }
+            closeConnection(connection);
         }
         return affectedRows;
     }
 
-    
     @Override
     public User authenticate(String email, String password) throws EmployerException {
-        Connection connection = DBManager.getInstance().connect();
+        User user = null;
+        Connection connection = createConnection();
 
         try {
-            PreparedStatement ps = null;
-            ps = connection.prepareStatement(SQLTable.buildSelect("*", "email = ? AND password = ?"));
+            PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*", "email = ? AND password = ?"));
             ps.setString(1, email);
             ps.setString(2, password);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
+            ResultSet rs = executeQueryFirstRow(ps);
+            if (rs == null || !rs.next()) {
+                throw new EmployerException("Las credenciales no son válidas.");
             }
+            user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
         } catch (SQLException e) {
             e.printStackTrace();
             throw new EmployerException("Error al verificar las credenciales.");
+        } finally {
+            closeConnection(connection);
         }
-        throw new InvalidCredentialsException("Credenciales invalidas.");
+        return user;
     }
 }
