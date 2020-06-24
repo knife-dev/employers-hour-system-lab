@@ -189,24 +189,24 @@ public class UserDaoImpl implements IUser<User> {
         return affectedRows;
     }
 
-    /*
+    
     @Override
     public User authenticate(String email, String password) throws EmployerException {
         Connection connection = DBManager.getInstance().connect();
 
         try {
             PreparedStatement ps = null;
-            ps = connection.prepareStatement(SQLTable.buildSelect("*", String.format("email = %s AND password= %s", email, password)));
+            ps = connection.prepareStatement(SQLTable.buildSelect("*", "email = ? AND password = ?"));
+            ps.setString(1, email);
+            ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"));
+                return new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"), rs.getString("role"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new EmployerException("Error al verificar las credenciales.");
         }
         throw new InvalidCredentialsException("Credenciales invalidas.");
-    }*/
-     
- 
+    }
 }

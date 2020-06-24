@@ -1,8 +1,5 @@
 package ui.views;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -12,11 +9,9 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 
-import dao.daoimpl.UserDaoImpl;
 import entities.User;
-import exceptions.EmployerException;
+import handler.UsersControlHandler;
 import net.miginfocom.swing.MigLayout;
-import ui.helpers.UIHelper;
 import ui.models.UserTableModel;
 import ui.views.bases.BaseFrameView;
 
@@ -24,14 +19,19 @@ public class UsersControlView extends BaseFrameView {
 
     private static final long serialVersionUID = 1L;
 
+    private UsersControlHandler handler;
+
+    public UsersControlView(UsersControlHandler handler) {
+        super(true);
+        this.handler = handler;
+        this.onViewCreated();
+    }
+
     /*
      * Menu del programa: Usuarios: Crear - Tipo Transportist/Sanitation Editar
      * Buscar Borrar Tareas: Añadir - incluye horas! Editar Buscar Borrar
      * Honorarios: Calcular - based on worker type
      */
-
-    // DAO
-    private UserDaoImpl userDaoImpl;
 
     // Panels
     private JPanel contentPanel;
@@ -60,15 +60,13 @@ public class UsersControlView extends BaseFrameView {
 
     // Listeners
 
-    @Override
+	@Override
     public void onCreate() {
         super.onCreate();
         setTitle("Users Control - Employer!");
         setResizable(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE); 
         setSize(550, 500);
-
-        userDaoImpl = new UserDaoImpl();
 
         // Create Panel
         contentPanel = new JPanel(new MigLayout("wrap 1, align 50% 50%")); //
@@ -138,24 +136,16 @@ public class UsersControlView extends BaseFrameView {
     @Override
     public void onViewCreated() {
         super.onViewCreated();
-        // Load users
-        List<User> users = new ArrayList<>();
-        try {
-            users = userDaoImpl.getAll();
-            System.out.println(users);
-        } catch (EmployerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.out.println("Error getting users: " + e.getMessage());
-        }
-        usersTable.setModel(new UserTableModel(users));
+        usersTable.setModel(new UserTableModel( handler.loadUsers()) );
     }
+
     
     private void onUserTableSelection(ListSelectionEvent e) {
         if (e.getValueIsAdjusting() || usersTable.getSelectedRow() < 0) return;
 
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
+
         System.out.println(selectedUser);
         emailTextField.setText(selectedUser.getEmail());
         passwordTextField.setText(selectedUser.getPassword());
@@ -170,58 +160,33 @@ public class UsersControlView extends BaseFrameView {
         String role     = roleTextField.getText();
 
         User newUser = new User(email, password, role);
-
-        try {
-            newUser = userDaoImpl.insert(newUser);
-            tableModel.addUser(newUser);
-        } catch (EmployerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        newUser = handler.createUser(newUser);
+        tableModel.addUser(newUser);
     }
 
     private void update() {
-        System.out.println("update");
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
 
         String email    = emailTextField.getText();
         String password = passwordTextField.getText();
         String role     = roleTextField.getText();
-
-
-        try {
-            selectedUser.setEmail(email);
-            selectedUser.setPassword(password);
-            selectedUser.setRole(role);
-
-            int affectedRows = userDaoImpl.update(selectedUser);
-            if(affectedRows > 0) {
-                tableModel.notifyDataChanged();
-            }
-        } catch (EmployerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        selectedUser.setEmail(email);
+        selectedUser.setPassword(password);
+        selectedUser.setRole(role);
+        if(handler.modifyUser(selectedUser)) {
+            tableModel.notifyDataChanged();
         }
-
     }
 
     private void delete() {
-        System.out.println("delete");
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
-        try {
-            int affectedRows = userDaoImpl.delete(selectedUser);
-            if(affectedRows > 0) {
-                tableModel.removeUser(usersTable.getSelectedRow());
-                tableModel.notifyDataChanged();
-            }
-        } catch (EmployerException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
+        if(handler.deleteUser(selectedUser)) {
+            tableModel.removeUser(usersTable.getSelectedRow());
+            tableModel.notifyDataChanged();
+        }
 
     }
 

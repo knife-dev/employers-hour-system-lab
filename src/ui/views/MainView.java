@@ -4,13 +4,21 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import handler.MainHandler;
 import net.miginfocom.swing.MigLayout;
-import ui.helpers.UIHelper;
 import ui.views.bases.BaseFrameView;
 
 public class MainView extends BaseFrameView {
 
     private static final long serialVersionUID = 1L;
+
+    private MainHandler handler;
+
+    public MainView(MainHandler handler) {
+        super(true);
+        this.handler = handler;
+        this.onViewCreated();
+    }
 
     /**
      * Hay un problema... los honorarios dependen del rol, y puede ser que con el
@@ -29,6 +37,11 @@ public class MainView extends BaseFrameView {
      * Honorarios: Calcular - based on worker type
      */
 
+    // Action commands
+    public static final String USERS_COMMAND = "users";
+    public static final String TASKS_COMMAND = "tasks";
+    public static final String FEES_COMMAND  = "FEES";
+
     // Panels
     private JPanel contentPanel;
 
@@ -38,6 +51,9 @@ public class MainView extends BaseFrameView {
     private JButton feesButton;
 
     // Listeners
+
+    // private ActionListener onTasksClickListener;
+    // private ActionListener onFeesClickListener;
 
     @Override
     public void onCreate() {
@@ -51,13 +67,16 @@ public class MainView extends BaseFrameView {
 
         // Create Buttons
         usersButton = new JButton("Usuarios");
-        usersButton.addActionListener(e -> new UsersControlView());
+        usersButton.setActionCommand(USERS_COMMAND);
+        usersButton.addActionListener(this.getActionListener());
 
         tasksButton = new JButton("Tareas");
-        // tasksButton.addActionListener(e -> new TasksControlView());
+        tasksButton.setActionCommand(TASKS_COMMAND);
+        tasksButton.addActionListener(this.getActionListener());
 
         feesButton  = new JButton("Honorarios");
-        // feesButton.addActionListener(e -> new FeesControlView());
+        feesButton.setActionCommand(FEES_COMMAND);
+        feesButton.addActionListener(this.getActionListener());
     }
 
     @Override
@@ -77,4 +96,5 @@ public class MainView extends BaseFrameView {
     public void onViewCreated() {
         super.onViewCreated();
     }
+
 }

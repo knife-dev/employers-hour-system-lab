@@ -2,7 +2,7 @@ package entities;
 
 public class User {
 
-    private static final String[] roles = {"transportist", "sanitation", "admin"}; // me gustaría más un enum.. pero dijo que eso no lo vimos y mejor no lo use xD
+    // private static final String[] roles = {"transportist", "sanitation", "admin"}; // me gustaría más un enum.. pero dijo que eso no lo vimos y mejor no lo use xD
 
     private Long id;
     private String email;

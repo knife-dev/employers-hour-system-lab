@@ -8,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import handler.LoginHandler;
 import ui.helpers.KMessageDialog;
 import ui.helpers.UIHelper;
 import ui.views.bases.BaseFrameView;
@@ -15,6 +16,17 @@ import ui.views.bases.BaseFrameView;
 public class LoginView extends BaseFrameView {
 
     private static final long serialVersionUID = 1L;
+
+    private LoginHandler handler;
+
+    public LoginView(LoginHandler handler) {
+        super(true);
+        this.handler = handler;
+        this.onViewCreated();
+    }
+
+    // Action Commands
+    public static final String LOGIN_COMMAND = "login";
 
     // Panels
     private JPanel contentPanel;
@@ -31,6 +43,11 @@ public class LoginView extends BaseFrameView {
     private JButton submitButton;
 
     // Listeners
+
+    public boolean performLogin() {
+        return handler.authenticate(emailTextField.getText(), passwordTextField.getText());
+    }
+
 
     @Override
     public void onCreate() {
@@ -53,14 +70,8 @@ public class LoginView extends BaseFrameView {
 
         // Create Buttons
         submitButton = new JButton("Login");
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // validate login
-                System.out.println("Login clicked");
-                new KMessageDialog("Login Error", "User not specified");
-            }
-        });
+        submitButton.setActionCommand(LOGIN_COMMAND);
+        submitButton.addActionListener(this.getActionListener());
 
 
     }
