@@ -1,16 +1,13 @@
 package handler;
 
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 import entities.User;
 import exceptions.EmployerException;
 import services.UserBO;
-import ui.helpers.KMessageDialog;
-import ui.listeners.OnClickListener;
-import ui.views.LoginView;
-import ui.views.UsersControlView;
+import ui.helpers.KDialog;
+import ui.helpers.KDialog.dialogType;
+import ui.views.LoginFrame;
 
 /*
     Handler:
@@ -19,13 +16,13 @@ import ui.views.UsersControlView;
         Views & BO
 */
 
-public class LoginHandler extends BaseHandler implements OnClickListener {
+public class LoginHandler {
 
     // Services
     UserBO userBO;
 
     // Views
-    LoginView loginView;
+    LoginFrame loginView;
 
     // Handlers
     MainHandler mainHandler;
@@ -36,8 +33,7 @@ public class LoginHandler extends BaseHandler implements OnClickListener {
     }
 
     public void initApp() {
-        loginView = new LoginView(this); //
-        loginView.setOnClickListener(this);
+        loginView = new LoginFrame(this); //
     }
 
 
@@ -50,21 +46,14 @@ public class LoginHandler extends BaseHandler implements OnClickListener {
         try {
             user = userBO.authUser(email, password);
         } catch (EmployerException e) {
-            new KMessageDialog("Login Error", e.getMessage());
+            new KDialog("Login Error", e.getMessage(), dialogType.ERROR);
             e.printStackTrace();
         }
-        return user != null;
-    }
-
-
-    @Override
-    public void OnClick(ActionEvent event, String actionCommand) {
-        // Handle clicks in view
-        if(actionCommand.equals(LoginView.LOGIN_COMMAND)) {
-            if(loginView.performLogin()) {
-                mainHandler.initApp();
-                loginView.dispose();
-            }
+        if(user != null) {
+            mainHandler.initApp();
+            loginView.dispose();
+            return true;
         }
+        return false;
     }
 }

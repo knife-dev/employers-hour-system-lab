@@ -16,7 +16,14 @@ import utils.SqlTable;
 
 public class UserDaoImpl extends BaseDaoImpl implements IUser<User> {
 
-    SqlTable SQLTable = new SqlTable("users", new String[] { "id", "email", "password", "role" });
+    SqlTable SQLTable;
+
+    public UserDaoImpl() {
+        super();
+        
+        SQLTable = new SqlTable("users", new String[] { "id", "email", "password", "role" });
+    }
+
 
     @Override
     public User get(Long id) throws EmployerException {
