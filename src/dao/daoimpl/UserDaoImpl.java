@@ -33,7 +33,7 @@ public class UserDaoImpl extends BaseDaoImpl implements IUser {
             PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*", "id = ?"));
             ps.setLong(1, id);
             ResultSet rs = executeQueryFirstRow(ps);
-            if (rs == null || !rs.next()) {
+            if (rs != null && rs.next()) {
                 user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),rs.getString("role"));
             }
         } catch (SQLException e) {
