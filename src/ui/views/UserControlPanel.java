@@ -11,6 +11,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 
 import entities.User;
+import exceptions.EmployerException;
 import handler.MainHandler;
 import net.miginfocom.swing.MigLayout;
 import ui.models.UserTableModel;
@@ -160,6 +161,7 @@ public class UserControlPanel extends BasePanel {
     private void update() {
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
+        if(selectedUser == null) return; // no user selected
 
         String email    = emailTextField.getText();
         String password = passwordTextField.getText();
@@ -175,6 +177,7 @@ public class UserControlPanel extends BasePanel {
     private void delete() {
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
+        if(selectedUser == null) return; // no user selected
 
         if(handler.deleteUser(selectedUser)) {
             tableModel.removeUser(usersTable.getSelectedRow());
