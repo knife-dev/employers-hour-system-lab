@@ -2,6 +2,8 @@ package ui.views;
 
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import handler.MainHandler;
 import net.miginfocom.swing.MigLayout;
@@ -38,6 +40,12 @@ public class MainFrame extends BaseFrame {
     public void onViewCreated() {
         super.onViewCreated();
         this.mb.setVisible(true);
+    }
+
+    public void switchPanel(JPanel pane) {
+        getContentPane().removeAll();
+        getContentPane().add(new JScrollPane(pane));
+        getContentPane().validate();
     }
 
 }

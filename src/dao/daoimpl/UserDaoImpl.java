@@ -14,7 +14,7 @@ import exceptions.InvalidUserException;
 import exceptions.UserNotFoundException;
 import utils.SqlTable;
 
-public class UserDaoImpl extends BaseDaoImpl implements IUser<User> {
+public class UserDaoImpl extends BaseDaoImpl implements IUser {
 
     SqlTable SQLTable;
 
@@ -33,10 +33,9 @@ public class UserDaoImpl extends BaseDaoImpl implements IUser<User> {
             PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*", "id = ?"));
             ps.setLong(1, id);
             ResultSet rs = executeQueryFirstRow(ps);
-            if (rs == null || !rs.next())
-                throw new UserNotFoundException("No se encontró el usuario.");
-            user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),
-            rs.getString("role"));
+            if (rs == null || !rs.next()) {
+                user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),rs.getString("role"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new UserNotFoundException("Error al recuperar los datos de usuario.");
@@ -165,6 +164,27 @@ public class UserDaoImpl extends BaseDaoImpl implements IUser<User> {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new EmployerException("Error al verificar las credenciales.");
+        } finally {
+            closeConnection(connection);
+        }
+        return user;
+    }
+
+    @Override
+    public User getByEmail(String email) throws EmployerException {
+        User user = null;
+        Connection connection = createConnection();
+        try {
+            PreparedStatement ps = preparedStatement(connection, SQLTable.buildSelect("*", "email = ?"));
+            ps.setString(1, email);
+            ResultSet rs = executeQueryFirstRow(ps);
+            if (rs != null && rs.next()){
+                user = new User(rs.getLong("id"), rs.getString("email"), rs.getString("password"),
+                rs.getString("role"));    
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new UserNotFoundException("Error al recuperar los datos de usuario.");
         } finally {
             closeConnection(connection);
         }

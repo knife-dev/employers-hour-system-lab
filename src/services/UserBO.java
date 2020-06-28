@@ -1,8 +1,9 @@
 package services;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
-import dao.daoimpl.UserDaoImpl;
+import dao.IUser;
 import entities.User;
 import exceptions.EmployerException;
 
@@ -11,26 +12,53 @@ public class UserBO {
 
     /*
     Services:
-        Implentación DAO (con JDBC):
+        DAOImplementation (with JDBC):
     Manipulates:
-        DATA
+        DATA and does checks
     */
+    public static final Pattern VALID_EMAIL_ADDRESS_REGEX = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern VALID_ROLES_REGEX         = Pattern.compile("admin|sanitation|transportist", Pattern.CASE_INSENSITIVE);
 
-    private UserDaoImpl daoImpl;
-    
 
-    public UserBO() {
-        daoImpl = new UserDaoImpl();
+    private IUser dao;
+
+    public UserBO(IUser dao) {
+        this.dao = dao;
     }
-
 
     public List<User> getAllUsers() throws EmployerException {
         // Load users
-        return daoImpl.getAll();
+        return dao.getAll();
+    }
+
+    private void checkUserRequirements(User user) throws EmployerException {
+        if(user == null)
+            throw new EmployerException("Instrucción no válida");
+
+        if(user.getEmail() == null || !VALID_EMAIL_ADDRESS_REGEX.matcher(user.getEmail()).matches())
+            throw new EmployerException("El email no es válido");
+        
+        if(user.getPassword() == null || user.getPassword().length() < 3)
+            throw new EmployerException("La contraseña debe tener tres o más caracteres.");
+
+        
+        // if(!VALID_ROLES_REGEX.matcher(user.getRole()).matches() ){
+        //     throw new EmployerException("Rol de privilegio no válido.");
+        // }
+        
     }
 
     public User createUser(User user) throws EmployerException {
-        return daoImpl.insert(user);
+        
+        checkUserRequirements(user);
+
+        if(dao.getByEmail(user.getEmail()) != null)
+            throw new EmployerException(String.format("Ya existe un usuario con esta dirección de email: %s", user.getEmail()));
+        
+        if(dao.get(user.getId()) != null) 
+            throw new EmployerException(String.format("Ya existe un usuario con este ID (%d).", user.getId()));
+
+        return dao.insert(user);
     }
 
     /**
@@ -40,14 +68,23 @@ public class UserBO {
      * @throws EmployerException
      */
     public int modifyUser(User user) throws EmployerException {
-        return daoImpl.update(user);
+
+        checkUserRequirements(user);
+
+        if(dao.get(user.getId()) == null) 
+            throw new EmployerException(String.format("No existe ningun usuario con este ID (%d).", user.getId()));
+            
+        return dao.update(user);
     }
 
     public int deleteUser(User user) throws EmployerException {
-        return daoImpl.delete(user);
+        // no further checks needed
+        return dao.delete(user);
     }
 
     public User authUser(String email, String password) throws EmployerException {
-        return daoImpl.authenticate(email, password);
+        // no further checks needed
+        return dao.authenticate(email, password);
     }
+
 }

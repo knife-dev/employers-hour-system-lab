@@ -1,6 +1,5 @@
 package tests;
 
-import handler.LoginHandler;
 import handler.MainHandler;
 
 public class UIAppTest {

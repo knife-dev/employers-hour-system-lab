@@ -5,8 +5,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import java.awt.Component;
 
+import dao.daoimpl.UserDaoImpl;
 import entities.User;
 import exceptions.EmployerException;
 import services.UserBO;
@@ -28,6 +28,8 @@ import ui.views.UserControlPanel;
 
 public class MainHandler {
 
+    // DAO Implementations
+    private UserDaoImpl userDaoImpl;
 
     // Services
     private UserBO userBO;
@@ -39,8 +41,12 @@ public class MainHandler {
     private UserControlPanel userControlPanel;
 
     public MainHandler() {
+
+        // initialize DAO implementations
+        userDaoImpl      = new UserDaoImpl();
+
         // initialize BOs
-        userBO           = new UserBO();
+        userBO           = new UserBO(userDaoImpl);
 
         // initialize Panels
         userControlPanel = new UserControlPanel(this);
@@ -57,15 +63,8 @@ public class MainHandler {
         frame.onViewCreated();
     }
 
-    
-    private void switchPanel(JPanel pane) {
-        frame.getContentPane().removeAll();
-        frame.getContentPane().add(new JScrollPane(pane));
-        frame.getContentPane().validate();
-    }
-    
     public void showUserControlPanel() {
-        switchPanel(userControlPanel);
+        frame.switchPanel(userControlPanel);
     }
     
     /**
