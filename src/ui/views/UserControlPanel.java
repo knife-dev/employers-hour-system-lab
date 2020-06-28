@@ -14,6 +14,8 @@ import entities.User;
 import exceptions.EmployerException;
 import handler.MainHandler;
 import net.miginfocom.swing.MigLayout;
+import ui.helpers.KDialog;
+import ui.helpers.KDialog.dialogType;
 import ui.models.UserTableModel;
 import ui.views.bases.BasePanel;
 import javax.swing.WindowConstants;
@@ -161,7 +163,10 @@ public class UserControlPanel extends BasePanel {
     private void update() {
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
-        if(selectedUser == null) return; // no user selected
+        if(selectedUser == null) {
+            new KDialog("Error", "Seleccione un usuario", dialogType.ERROR);
+            return;
+        }
 
         String email    = emailTextField.getText();
         String password = passwordTextField.getText();
@@ -177,7 +182,10 @@ public class UserControlPanel extends BasePanel {
     private void delete() {
         UserTableModel tableModel = (UserTableModel) usersTable.getModel();
         User selectedUser = tableModel.getUser(usersTable.getSelectedRow());
-        if(selectedUser == null) return; // no user selected
+        if(selectedUser == null) {
+            new KDialog("Error", "Seleccione un usuario", dialogType.ERROR);
+            return;
+        }
 
         if(handler.deleteUser(selectedUser)) {
             tableModel.removeUser(usersTable.getSelectedRow());
